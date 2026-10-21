@@ -21,8 +21,8 @@ pipeline {
         )
         string(
             name: 'MANAGER_HOST',
-            defaultValue: '',
-            description: 'Public IP or DNS of the Swarm manager'
+            defaultValue: '3.93.162.107',
+            description: '3.93.162.107'
         )
     }
 
