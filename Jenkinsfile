@@ -67,37 +67,37 @@ pipeline {
             }
         }
 
-        stage('Checkout release source') {
-            when {
-                expression {
-                    env.IS_TAG_RELEASE == 'true' ||
-                    params.ACTION == 'build'
+            stage('Checkout release source') {
+                steps {
+                    checkout scm
+
+                    sh '''
+                        set -eu
+                        git fetch --force --tags origin
+
+                        if [ "$IS_TAG_RELEASE" = "true" ]; then
+                            git checkout "refs/tags/${RELEASE_VERSION}"
+                        elif [ "$ACTION" = "build" ] || [ "$ACTION" = "push" ]; then
+                            git checkout main
+                        fi
+
+                        test -f Dockerfile
+                        test -f docker-stack.yml
+                    '''
                 }
             }
-            steps {
-                checkout scm
-                sh '''
-                    set -eu
-                    git fetch --force --tags origin
-                    git checkout "refs/tags/${RELEASE_VERSION}"
-                    test -f Dockerfile
-                    test -f docker-stack.yml
-                '''
-            }
-        }
 
         stage('Build image') {
             when {
                 expression {
                     env.IS_TAG_RELEASE == 'true' ||
-                    params.ACTION == 'build'
+                    params.ACTION in ['build', 'push']
                 }
             }
             steps {
                 sh '''
                     set -eu
-                    docker build \
-                      -t "${IMAGE_URI}:${RELEASE_VERSION}" .
+                    docker build -t "${IMAGE_URI}:${RELEASE_VERSION}" .
                 '''
             }
         }
