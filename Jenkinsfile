@@ -66,26 +66,33 @@ pipeline {
 
             }
         }
+        
 
-            stage('Checkout release source') {
-                steps {
-                    checkout scm
+        stage('Checkout release source') {
+            steps {
+                checkout scm
 
-                    sh '''
-                        set -eu
+                sh '''
+                    set -eu
+
+                    if [ "$IS_TAG_RELEASE" = "true" ]; then
+                        echo "Fetching tags for release: ${RELEASE_VERSION}"
                         git fetch --force --tags origin
+                        git checkout "refs/tags/${RELEASE_VERSION}"
+                    elif [ "$ACTION" = "build" ] || [ "$ACTION" = "push" ]; then
+                        echo "Using main branch for action: $ACTION"
+                        git checkout main
+                    fi
 
-                        if [ "$IS_TAG_RELEASE" = "true" ]; then
-                            git checkout "refs/tags/${RELEASE_VERSION}"
-                        elif [ "$ACTION" = "build" ] || [ "$ACTION" = "push" ]; then
-                            git checkout main
-                        fi
+                    echo "Checking required project files..."
+                    test -f Dockerfile
+                    test -f docker-stack.yml
 
-                        test -f Dockerfile
-                        test -f docker-stack.yml
-                    '''
-                }
+                    echo "Checkout completed successfully."
+                '''
             }
+        }
+
 
         stage('Build image') {
             when {
