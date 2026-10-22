@@ -4,7 +4,7 @@ services:
     image: IMAGE_PLACEHOLDER
     ports:
       - target: 80
-        published: 8080
+        published: 88
         protocol: tcp
         mode: ingress
     networks:
