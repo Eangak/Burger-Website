@@ -37,32 +37,33 @@ pipeline {
     stages {
         stage('Validate') {
             steps {
-                script {
-                    env.IS_TAG_RELEASE =
-                        (env.TAG_NAME?.trim()) ? 'true' : 'false'
+                    script {
+                        env.IS_TAG_RELEASE =
+                            (env.TAG_NAME?.trim()) ? 'true' : 'false'
 
-                    if (env.IS_TAG_RELEASE == 'true') {
-                        env.RELEASE_VERSION = env.TAG_NAME
-                    } else {
-                        env.RELEASE_VERSION = params.VERSION.trim()
-                    }
-
-                    if (!(env.RELEASE_VERSION ==~
-                        /v[0-9]+\.[0-9]+\.[0-9]+/)) {
-                        error('VERSION must use a tag such as v1.0.0')
-                    }
-
-                    if (params.ACTION in ['deploy', 'rollback'] ||
-                        env.IS_TAG_RELEASE == 'true') {
-                        if (!params.MANAGER_HOST.trim()) {
-                            error('Enter MANAGER_HOST before deployment')
+                        if (env.IS_TAG_RELEASE == 'true') {
+                            env.RELEASE_VERSION = env.TAG_NAME
+                        } else {
+                            env.RELEASE_VERSION = params.VERSION.trim()
                         }
+
+                        // Validate semantic version tags such as v1.0.0
+                        if (!(env.RELEASE_VERSION ==~ /v[0-9]+\.[0-9]+\.[0-9]+/)) {
+                            error('VERSION must use a tag such as v1.0.0')
+                        }
+
+                        if (params.ACTION in ['deploy', 'rollback'] ||
+                            env.IS_TAG_RELEASE == 'true') {
+                            if (!params.MANAGER_HOST.trim()) {
+                                error('Enter MANAGER_HOST before deployment')
+                            }
+                        }
+
+                        echo "Release version: ${env.RELEASE_VERSION}"
+                        echo "Automatic tag release: ${env.IS_TAG_RELEASE}"
+                        echo "Requested action: ${params.ACTION}"
                     }
 
-                    echo "Release version: ${env.RELEASE_VERSION}"
-                    echo "Automatic tag release: ${env.IS_TAG_RELEASE}"
-                    echo "Requested action: ${params.ACTION}"
-                }
             }
         }
 
