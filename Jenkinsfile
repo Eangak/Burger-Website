@@ -66,8 +66,9 @@ pipeline {
 
             }
         }
-        
 
+
+        
         stage('Checkout release source') {
             steps {
                 checkout scm
@@ -76,13 +77,12 @@ pipeline {
                     set -eu
 
                     if [ "$IS_TAG_RELEASE" = "true" ]; then
-                        echo "Fetching tags for release: ${RELEASE_VERSION}"
                         git fetch --force --tags origin
                         git checkout "refs/tags/${RELEASE_VERSION}"
-                    elif [ "$ACTION" = "build" ] || [ "$ACTION" = "push" ]; then
-                        echo "Using main branch for action: $ACTION"
-                        git checkout main
                     fi
+
+                    echo "Current commit:"
+                    git rev-parse --short HEAD
 
                     echo "Checking required project files..."
                     test -f Dockerfile
@@ -92,6 +92,7 @@ pipeline {
                 '''
             }
         }
+
 
 
         stage('Build image') {
